@@ -1,87 +1,72 @@
-#====================================================================================================#
-# Imports:                                                                                           #
-#====================================================================================================#
-from typing import Any, List, Tuple
+from typing import List, Any, Tuple
 
-#====================================================================================================#
-# Play Function:                                                                                     #
-#====================================================================================================#
+# Memory structure to track moves and state
+__memory__ = {
+    'count': 0,
+    'last_board': None,
+    'opponent_last_moves': [],  # Track opponent's last moves
+}
+
+def find_opponent_first_move(board: List[List[int]], player: int) -> Tuple[int, int]:
+    opponent = 1 - player  # The opponent's symbol is the opposite of the player's symbol
+    
+    # Search for the first occurrence of the opponent's symbol
+    for col in range(len(board)):
+        for row in range(len(board[col])):
+            if board[col][row] == opponent:
+                return (col, row)  # Return the first opponent's move (column, row)
+    
+    return None  # No opponent move found yet (the player started)
+
+def update_board(board: List[List[int]], move: int, player: int) -> None:
+    board[move].append(player)
+
+def find_opponent_last_move(last_board: List[List[int]], current_board: List[List[int]]) -> Tuple[int, int]:
+    # Iterate through columns to detect where the board has changed
+    for col in range(len(current_board)):
+        if len(last_board[col]) != len(current_board[col]):
+            # Find the first row where a new symbol (opponent's) has been added
+            for row in range(len(current_board[col])):
+                if len(last_board[col]) <= row or last_board[col][row] != current_board[col][row]:
+                    return (col, row)  # Return the column and row of the opponent's move
+    
+    return None  # No change detected if there's no move
+
+
 def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -> Tuple[int, Any]:
     '''AI Player Function with heuristic evaluation for optimal move selection.'''
+    try:
+        opponent = 1 - player  # The opponent's symbol is the opposite of the player's symbol
+        optimal_choice = 1  # Placeholder for the AI's selected move
+        __memory__['count'] += 1  # Increment turn counter
+        
+        # If no previous board is recorded, it's the first turn
+        if __memory__['last_board'] is None:
+            # Detect if the opponent has already made a move
+            opponent_first_move = find_opponent_first_move(board, player)
+            
+            if opponent_first_move:
+                print(f"Opponent's first move was at: Column {opponent_first_move[0]}, Row {opponent_first_move[1]}")
+                # Store the opponent's first move in memory
+                __memory__['opponent_last_moves'].append(opponent_first_move)
+            
+            # Update the last_board to the current state for future comparisons
+            __memory__['last_board'] = board
+        else:
+            last_board = __memory__['last_board']  # Retrieve the previous board state
+            
+            # Find the opponent's last move by comparing the last and current board
+            opponent_last_move = find_opponent_last_move(last_board, board)
+            
+            if opponent_last_move:
+                print(f"Opponent's last move was at: Column {opponent_last_move[0]}, Row {opponent_last_move[1]}")
+                # Store the opponent's last move in memory
+                __memory__['opponent_last_moves'].append(opponent_last_move)
     
-    if player == 1:
-        opponent = 2
-    else:
-        opponent = 1
-
-    def check_winning_move(board, col, player):
-        '''check for a wining move.'''
-        temp_board = [col[:] for col in board] # create a deep copy of the board to run checks.
-        temp_board[col].append(player)
-        return is_winning(temp_board, player)
-
-    def is_winning(board, player):
-        '''Check if the player has won after placing a piece.'''
-        n_cols = n_target = n_rows = len(board)
-        # Check horizontally
-        for row in range(n_rows):
-            for col in range(n_cols - n_target + 1):
-                if all(len(board[c]) > row and board[c][row] == player for c in range(col, col + n_target)):
-                    return True
-        
-        # Check vertically
-        for col in range(n_cols):
-            if len(board[col]) >= n_target and all(board[col][r] == player for r in range(len(board[col]) - n_target, len(board[col]))):
-                return True
-        
-        return False
-
-    def evaluate_position(board, col, player):
-        '''Heuristic evaluation of a move.'''
-        score = 0
-        
-        # Simulate placing the piece
-        temp_board = [c[:] for c in board]
-        temp_board[col].append(player)
-
-        # Check for potential lines horizontally and vertically
-        for row in range(len(temp_board[col])):
-            # Vertical potential
-            if len(temp_board[col]) >= 3 and all(temp_board[col][r] == player for r in range(max(0, row-2), row+1)):
-                score += 10  # Add points if there are 3 aligned pieces vertically
-
-        # Check horizontally across rows
-        for r in range(len(board)):
-            in_row = 0
-            for c in range(len(board)):
-                if len(temp_board[c]) > r and temp_board[c][r] == player:
-                    in_row += 1
-                    if in_row == 2:
-                        score += 5  # Add points for 2 aligned pieces horizontally
-                    if in_row == 3:
-                        score += 10  # Add more for 3 aligned
-                else:
-                    in_row = 0  # Reset if interrupted
-
-        return score
-
-    # Step 1: Try to win the game (if any move will result in a win)
-    for col in choices:
-        if check_winning_move(board, col, player):
-            return col, memory
-
-    # Step 2: Block opponent's winning move
-    for col in choices:
-        if check_winning_move(board, col, opponent):
-            return col, memory
-
-    # Step 3: Evaluate all valid moves and pick the best one based on the heuristic
-    best_score = -float('inf')
-    best_move = None
-    for col in choices:
-        score = evaluate_position(board, col, player)
-        if score > best_score:
-            best_score = score
-            best_move = col
-
-    return best_move, memory
+        update_board(board, optimal_choice, player)
+    finally:
+        # Update memory with the current board state
+        __memory__['last_board'] = board
+        memory = __memory__
+    
+    return optimal_choice, memory
