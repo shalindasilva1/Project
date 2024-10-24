@@ -40,7 +40,6 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
             opponent_first_move = find_opponent_first_move(board, player)
             
             if opponent_first_move:
-                print(f"Opponent's first move was at: Column {opponent_first_move[0]}, Row {opponent_first_move[1]}")
                 __memory__['opponent_last_moves'].append(opponent_first_move)
             
             __memory__['last_board'] = board
@@ -50,9 +49,9 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
             opponent_last_move = find_opponent_last_move(last_board, board)
             
             if opponent_last_move:
-                print(f"Opponent's last move was at: Column {opponent_last_move[0]}, Row {opponent_last_move[1]}")
                 __memory__['opponent_last_moves'].append(opponent_last_move)
-    
+        
+        #
         update_board(board, optimal_choice, player)
     finally:
         __memory__['last_board'] = board
