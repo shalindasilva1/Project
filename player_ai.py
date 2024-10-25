@@ -3,8 +3,8 @@ from typing import List, Any, Tuple
 def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -> Tuple[int, Any]:
     '''AI Player Function with heuristic evaluation for optimal move selection.'''
     
-    opponent = 2 if player == 1 else 1
-    n_target = min(3, len(board))  # Target to win (can be dynamic based on board size)
+    opponent = 1 if player == 0 else 0
+    n_target = memory.get('n_target', 3) if memory else 3  # Start with 3 or use from memory
 
     def check_winning_move(board, col, player):
         '''Simulate placing the piece and check if it's a winning move.'''
@@ -19,25 +19,34 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
         n_cols = len(board)
         
         # Check horizontally
-        for row in range(n_rows):
-            for col in range(n_cols - n_target + 1):
+        # board = [[],[],[],[],[],[],[]] length can be n (0 to 9)
+        # board[0] = [] length can be m (0 to n)
+        # board[0][0] = None if empty
+        # board[0][] = 0 or 1 if filled
+        for row in range(max(len(col) for col in board)):
+            for col in range(len(board) - n_target + 1):
                 if all(len(board[c]) > row and board[c][row] == player for c in range(col, col + n_target)):
                     return True
         
         # Check vertically
-        for col in range(n_cols):
-            if len(board[col]) >= n_target and all(board[col][r] == player for r in range(len(board[col]) - n_target, len(board[col]))):
-                return True
+        for col in range(len(board)):
+            if len(board[col]) >= n_target:
+                for row in range(len(board[col]) - n_target + 1):
+                    if all(board[col][row + r] == player for r in range(n_target)):
+                        return True
         
-        # Diagonal checks (top-left to bottom-right and bottom-left to top-right)
-        for row in range(n_rows - n_target + 1):
-            for col in range(n_cols - n_target + 1):
-                # Top-left to bottom-right
+        # Diagonal checks (top-left to bottom-right)
+        for row in range(max(len(col) for col in board) - n_target + 1):
+            for col in range(len(board) - n_target + 1):
                 if all(len(board[col + i]) > row + i and board[col + i][row + i] == player for i in range(n_target)):
                     return True
-                # Bottom-left to top-right
-                if all(len(board[col + i]) > row + n_target - i - 1 and board[col + i][row + n_target - i - 1] == player for i in range(n_target)):
+
+        # Diagonal checks (bottom-left to top-right)
+        for row in range(n_target - 1, max(len(col) for col in board)):
+            for col in range(len(board) - n_target + 1):
+                if all(len(board[col + i]) > row - i and board[col + i][row - i] == player for i in range(n_target)):
                     return True
+        
         
         return False
 
@@ -85,7 +94,7 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
         board[col].pop()
 
         return score
-
+    
     # Step 1: Try to win the game (if any move will result in a win)
     for col in choices:
         if check_winning_move(board, col, player):
