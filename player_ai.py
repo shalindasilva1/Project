@@ -15,9 +15,8 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
 
     def is_winning(board, player):
         '''Check if the player has won after placing a piece.'''
-        n_rows = max(len(col) for col in board)
-        n_cols = len(board)
-        
+        n_target = memory.get('n_target', 3) if memory else 3  # Start with 3 or use from memory
+
         # Check horizontally
         # board = [[],[],[],[],[],[],[]] length can be n (0 to 9)
         # board[0] = [] length can be m (0 to n)
@@ -27,14 +26,14 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
             for col in range(len(board) - n_target + 1):
                 if all(len(board[c]) > row and board[c][row] == player for c in range(col, col + n_target)):
                     return True
-        
+
         # Check vertically
         for col in range(len(board)):
             if len(board[col]) >= n_target:
                 for row in range(len(board[col]) - n_target + 1):
                     if all(board[col][row + r] == player for r in range(n_target)):
                         return True
-        
+
         # Diagonal checks (top-left to bottom-right)
         for row in range(max(len(col) for col in board) - n_target + 1):
             for col in range(len(board) - n_target + 1):
@@ -46,8 +45,7 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
             for col in range(len(board) - n_target + 1):
                 if all(len(board[col + i]) > row - i and board[col + i][row - i] == player for i in range(n_target)):
                     return True
-        
-        
+
         return False
 
     def evaluate_position(board, col, player):
