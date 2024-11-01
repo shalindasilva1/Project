@@ -1,0 +1,58 @@
+﻿In the Programming Project of this course, you and your team will implement an "AI" player for TicTacToe. You can find the game code (game.py), a human player function (player_human.py), and a random player (player_random.py) in the attached zip file.
+
+Game rules: In this project, you will work with a special version of TicTacToe.
+* Each new game creates a game plan with n x n empty cells. The size n is a random number between 3 and 10.
+* The game is played by two players that in turn place a new piece in one of the n columns.
+* The game is won by the player that first manages to get a row of m adjacent pieces on the board. The target m is a random number between 3 and n.
+* In case of no more possible moves, the player that took the lowest time per turn wins.
+* If the code of one of the players raises an exception, this player looses the round.
+ 
+Here you can see an example game plan with n = 9:
+ 
+                      
+ 
+ 
+Starting the game: To start the game, extract the attached zip-file to a new folder. In this description, I will use the placeholder [project_folder] to refer to this folder. Then start a console and navigate to the new folder using the following command:
+>> cd [project_folder]
+Lastly run the game using:
+>> python game.py
+This will let you choose from all player implementations in the same folder as game.py.
+ 
+Your tasks: In this project, you will plan and execute a programming task as a team. The grading is Pass/Fail and will be measured by the following two deliverables (your team has to pass both):
+ 
+An implementation of an “AI” player. For this you will write a python function with the following skeleton:
+def play(board:List[List[int]], choices:List[int], player:int, memory:Any) -> Tuple[int, Any]:    
+     '''Your team's player.                                                                        
+                                                                                                   
+         Arguments:                                                                                
+             board (List[List[int]]): The game plan as a list of columns. Each column is a list of 
+                                      integer ids signifying the player who placed the piece.      
+             choices     (List[int]): The possible moves allowed by the game rules.                
+             player            (int): Integer id of the current player in the game plan.           
+             memory            (any): Persistent information passed as the second output in the    
+                                      previous round. Initialized with None.                       
+                                                                                                   
+         Returns   (Tuple[int, Any]): A tuple of the selected column (int) and the memory object   
+                                      for the next iteration (can be anything).                    
+     '''                                                                                           
+     # your code goes here:                                                                        
+*      return ..., memory
+This function recieves the following inputs from the game:
+   * board: the current state of the game as a list of columns. Each of these columns is a series of pieces placed by the players in that column.
+E.g.:           
+   * choices: the list of possible columns for your player to place the next piece.
+E.g.:           
+   * player: the numeric id of your player on the game plan.
+I.e.:   
+   * memory: an object of your choice, that you returned as the second part of your output in the previous round. This can be used to save information between rounds.
+      * Based on these inputs and the strategy you implement, your function will place a new piece on the game plan. To pass this part of the project, your player has to win against a series of basic strategies checked during the upload of your function.
+Within your function, you are allowed to do anything that does not exceed a time limit of 1s (this depends on the processor speed of the computer running the code so be careful!) or involve the import of libraries not included in the standard Python packet (i.e. anything that has to be installed using pip). Be aware that we expect your code to follow a strategy devised by your team (see next bullet point).
+      * A poster + presentation presenting the theory and results behind your implementation. In the last session of the course, you and your team will pitch the concept and takeaways of your implementation. To illustrate this short pitch (max 5 minutes), you will prepare a small poster (A4 format, horizontal) explaining your team’s effort. We will then ask questions about your project and decide on your grade. Each team member needs to show that they understand the code of the project. Be prepared for questions to each team member!
+Additionally, we will run a small tournament between the submitted players. Each duel will be scored best of three rounds and each turn has a time limit of 1 second. The four teams scoring best in this tournament will get bonus points on the exam (in the case of MAR-IP, the top two teams will get bonus points).
+ 
+How to do this: We suggest that you approach this project in three steps:
+         1. Get familiar with the task: Play the game a few times. Try to understand the input and output of the play(…) functions. Maybe do a few first experiments.
+         2. Devise a strategy: With your team build a strategy how to win the game. You should do some research on the internet during this step (keep your sources for the poster!). Think of how to implement the strategy in a Python function. You don’t necessarily have to implement a mini-max algorithm for this, but you can if you want.
+!! Start this before the first project session, so we can address any questions during the Q&A !!
+         3. Implement your strategy: Transfer the strategy from your second step to a python function. Make sure your function fulfills all requirements described previously. Once you think your code is finished upload it on NextIlearn and see if you need to improve it.
+!! Start this before the second project session, so we can address any questions during the Q&A !!
