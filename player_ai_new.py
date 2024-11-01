@@ -12,13 +12,6 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
     with open('n_target.txt', 'a') as f:
         f.write(str(n_target) + '\n')
 
-    def check_winning_move(board, col, player):
-        '''Check for possible winning moves on the board.'''
-        board[col].append(player)  # select col for each player.
-        result = is_winning(board, player)
-        board[col].pop()  # remove the move.
-        return result
-
     def is_winning(board, player):
         '''Check horizontally, vertically, diagonally for winning moves.'''
         # horizontal
@@ -48,9 +41,17 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
 
         return False
 
+    def check_winning_move(board, col, player):
+        '''Check for possible winning moves on the board.'''
+        board[col].append(player)  # select col for each player.
+        result = is_winning(tuple(map(tuple, board)), player)
+        board[col].pop()  # remove the move.
+        return result
+
     def minimax(board, depth, alpha, beta, maximizing_player):
         '''Minimax algorithm with alpha-beta pruning.'''
-        if depth == 0 or is_winning(board, player) or is_winning(board, opponent):
+        board_tuple = tuple(map(tuple, board))
+        if depth == 0 or is_winning(board_tuple, player) or is_winning(board_tuple, opponent):
             return heuristic_score(board, player) - heuristic_score(board, opponent)
 
         if maximizing_player:
