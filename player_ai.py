@@ -1,46 +1,43 @@
 from typing import List, Any, Tuple
+import random
 
 def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -> Tuple[int, Any]:
-    '''AI Player Function with heuristic evaluation for optimal move selection.'''
+    '''Tic-Tac bot that tries to block oponent to the best and guess the best column.'''
     
     opponent = 1 if player == 0 else 0
-    n_target = memory.get('n_target', 3) if memory else 3  # Start with 3 or use from memory
+    n_target = memory.get('n_target', 3) if memory else 3  # reading memory or init n_target.
 
     def check_winning_move(board, col, player):
-        '''Simulate placing the piece and check if it's a winning move.'''
-        board[col].append(player)  # Place the piece
-        result = is_winning(board, player)  # Check if the move leads to a win
-        board[col].pop()  # Undo the move
+        '''Check for possible wining moves on the board.'''
+        board[col].append(player)  # select col for each plaer.
+        result = is_winning(board, player)
+        board[col].pop()  # remove the move.
         return result
 
     def is_winning(board, player):
-        '''Check if the player has won after placing a piece.'''
+        '''Check horizontally, vertically, diagonally for winnig mmoves.'''
         n_target = memory.get('n_target', 3) if memory else 3  # Start with 3 or use from memory
 
-        # Check horizontally
-        # board = [[],[],[],[],[],[],[]] length can be n (0 to 9)
-        # board[0] = [] length can be m (0 to n)
-        # board[0][0] = None if empty
-        # board[0][] = 0 or 1 if filled
+        # horizontal
         for row in range(max(len(col) for col in board)):
             for col in range(len(board) - n_target + 1):
                 if all(len(board[c]) > row and board[c][row] == player for c in range(col, col + n_target)):
                     return True
 
-        # Check vertically
+        # vertical
         for col in range(len(board)):
             if len(board[col]) >= n_target:
                 for row in range(len(board[col]) - n_target + 1):
                     if all(board[col][row + r] == player for r in range(n_target)):
                         return True
 
-        # Diagonal checks (top-left to bottom-right)
+        # top-left -> bottom-right
         for row in range(max(len(col) for col in board) - n_target + 1):
             for col in range(len(board) - n_target + 1):
                 if all(len(board[col + i]) > row + i and board[col + i][row + i] == player for i in range(n_target)):
                     return True
 
-        # Diagonal checks (bottom-left to top-right)
+        # bottom-left -> top-right
         for row in range(n_target - 1, max(len(col) for col in board)):
             for col in range(len(board) - n_target + 1):
                 if all(len(board[col + i]) > row - i and board[col + i][row - i] == player for i in range(n_target)):
@@ -48,69 +45,59 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
 
         return False
 
-    def evaluate_position(board, col, player):
-        '''Heuristic evaluation of a move.'''
+    def heuristic_score(board, col, player):
+        '''
+            applying heuristic score to the board to find the best move.
+            https://medium.com/@ma274/tic-tac-toe-game-using-heuristic-alpha-beta-tree-search-algorithm-26b13273bc5b
+        '''
         score = 0
-        
-        # Simulate placing the piece
-        board[col].append(player)  # Place the piece
+        board[col].append(player)
 
-        # Check for vertical, horizontal, and diagonal potentials (simplified heuristic logic)
-        
-        # Vertical potential
-        if len(board[col]) >= n_target - 1 and all(board[col][r] == player for r in range(len(board[col]) - n_target + 1, len(board[col]))):
-            score += 10
-        
-        # Horizontal potential
-        for row in range(len(board[col])):
-            for c in range(max(0, col - n_target + 1), min(len(board), col + n_target)):
-                if c != col and len(board[c]) > row and board[c][row] == player:
-                    board[c].append(player)
-                    if is_winning(board, player):
-                        score += 1
-                    board[c].pop()
-        
-        # Diagonal potential (top-left to bottom-right)
-        for row in range(len(board[col])):
-            for i in range(-n_target + 1, n_target):
-                if 0 <= col + i < len(board) and 0 <= row + i < len(board[col + i]):
-                    board[col + i].append(player)
-                    if is_winning(board, player):
-                        score += 1
-                    board[col + i].pop()
-        
-        # Diagonal potential (bottom-left to top-right)
-        for row in range(len(board[col])):
-            for i in range(-n_target + 1, n_target):
-                if 0 <= col + i < len(board) and 0 <= row - i < len(board[col + i]):
-                    board[col + i].append(player)
-                    if is_winning(board, player):
-                        score += 1
-                    board[col + i].pop()
+        # horizontal
+        for row in range(max(len(col) for col in board)):
+            for c in range(len(board) - n_target + 1):
+                if all(len(board[c + i]) > row and board[c + i][row] == player for i in range(n_target)):
+                    score += 1
 
-        # Undo the move after evaluation
+        # vertical
+        for c in range(len(board)):
+            if len(board[c]) >= n_target:
+                for row in range(len(board[c]) - n_target + 1):
+                    if all(board[c][row + r] == player for r in range(n_target)):
+                        score += 1
+
+        # top-left -> bottom-right
+        for row in range(max(len(col) for col in board) - n_target + 1):
+            for c in range(len(board) - n_target + 1):
+                if all(len(board[c + i]) > row + i and board[c + i][row + i] == player for i in range(n_target)):
+                    score += 1
+
+        # bottom-left -> top-right
+        for row in range(n_target - 1, max(len(col) for col in board)):
+            for c in range(len(board) - n_target + 1):
+                if all(len(board[c + i]) > row - i and board[c + i][row - i] == player for i in range(n_target)):
+                    score += 1
+
         board[col].pop()
-
         return score
-    
-    # Step 1: Try to win the game (if any move will result in a win)
+
+    # 1. Check win move avilability.
     for col in choices:
         if check_winning_move(board, col, player):
             return col, memory
 
-    # Step 2: Block opponent's winning move
+    # 2. Opponent win move handle.
     for col in choices:
         if check_winning_move(board, col, opponent):
             return col, memory
 
-    # Step 3: Evaluate all valid moves and pick the best one based on the heuristic
-    best_score = -float('inf')
-    best_move = None
+    # 3. heuristic_score to guess.
+    best_score = -1
+    best_col = random.choice(choices)
     for col in choices:
-        score = evaluate_position(board, col, player)
+        score = heuristic_score(board, col, player)
         if score > best_score:
             best_score = score
-            best_move = col
+            best_col = col
 
-    # Default fallback (in case no best move found)
-    return best_move or choices[0], memory
+    return best_col, memory
