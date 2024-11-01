@@ -8,6 +8,9 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
     if memory is None:
         memory = {'n_target': 3}
     n_target = memory['n_target']
+    # log n_target to a text file
+    with open('n_target.txt', 'a') as f:
+        f.write(str(n_target) + '\n')
 
     def check_winning_move(board, col, player):
         '''Check for possible winning moves on the board.'''
@@ -104,6 +107,64 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
 
         return score
 
+    def adjust_n_target(board, n_target):
+        '''Adjust n_target based on the current game state.'''
+        max_consecutive = 0
+
+        # Check horizontally
+        for row in range(max(len(col) for col in board)):
+            for col in range(len(board)):
+                consecutive = 0
+                for c in range(col, len(board)):
+                    if len(board[c]) > row and board[c][row] == player:
+                        consecutive += 1
+                    else:
+                        break
+                max_consecutive = max(max_consecutive, consecutive)
+
+        # Check vertically
+        for col in range(len(board)):
+            consecutive = 0
+            for row in range(len(board[col])):
+                if board[col][row] == player:
+                    consecutive += 1
+                else:
+                    break
+            max_consecutive = max(max_consecutive, consecutive)
+
+        # Check top-left -> bottom-right
+        for row in range(max(len(col) for col in board)):
+            for col in range(len(board)):
+                consecutive = 0
+                for i in range(min(len(board) - col, max(len(col) for col in board) - row)):
+                    if len(board[col + i]) > row + i and board[col + i][row + i] == player:
+                        consecutive += 1
+                    else:
+                        break
+                max_consecutive = max(max_consecutive, consecutive)
+
+        # Check bottom-left -> top-right
+        for row in range(max(len(col) for col in board)):
+            for col in range(len(board)):
+                consecutive = 0
+                for i in range(min(len(board) - col, row + 1)):
+                    if len(board[col + i]) > row - i and board[col + i][row - i] == player:
+                        consecutive += 1
+                    else:
+                        break
+                max_consecutive = max(max_consecutive, consecutive)
+
+        # Adjust n_target based on the maximum consecutive marks found
+        if max_consecutive >= n_target:
+            n_target += 1
+        elif max_consecutive < n_target - 1:
+            n_target = max(3, max_consecutive + 1)  # Ensure n_target is at least 3
+        return n_target
+
+    # Adjust n_target before making a move
+    n_target = adjust_n_target(board, n_target)
+    memory['n_target'] = n_target
+
     # 1. Check win move availability.
     for col in choices:
         if check_winning_move(board, col, player):
@@ -124,5 +185,11 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
         if score > best_score:
             best_score = score
             best_col = col
+
+    # Check if there are n_target consecutive marks in any direction
+    board[best_col].append(player)
+    if is_winning(tuple(map(tuple, board)), player):
+        memory['n_target'] += 1
+    board[best_col].pop()
 
     return best_col, memory
