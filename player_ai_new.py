@@ -5,7 +5,9 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
     '''AI player using minimax algorithm with alpha-beta pruning.'''
     
     opponent = 1 if player == 0 else 0
-    n_target = memory.get('n_target', 3) if memory else 3  # reading memory or init n_target.
+    if memory is None:
+        memory = {'n_target': 3}
+    n_target = memory['n_target']
 
     def check_winning_move(board, col, player):
         '''Check for possible winning moves on the board.'''
@@ -16,8 +18,6 @@ def play(board: List[List[int]], choices: List[int], player: int, memory: Any) -
 
     def is_winning(board, player):
         '''Check horizontally, vertically, diagonally for winning moves.'''
-        n_target = memory.get('n_target', 3) if memory else 3  # Start with 3 or use from memory
-
         # horizontal
         for row in range(max(len(col) for col in board)):
             for col in range(len(board) - n_target + 1):
